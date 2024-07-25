@@ -16,5 +16,5 @@ class SUPERMANAGER_API UQuickActionUtility : public UAssetActionUtility
 
 public:
 	UFUNCTION(CallInEditor)
-	void TestFunc();
+	static void DuplicateAsset(int32 NumOfDuplicates);
 };
