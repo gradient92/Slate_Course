@@ -5,6 +5,7 @@
 #include "DebugHeader.h"
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
+#include "ObjectTools.h"
 
 void UQuickActionUtility::DuplicateAsset(int32 NumOfDuplicates)
 {
@@ -21,7 +22,7 @@ void UQuickActionUtility::DuplicateAsset(int32 NumOfDuplicates)
 	{
 		for(int32 i = 0; i < NumOfDuplicates; i++)
 		{
-			const FString SourceAssetPath = SelectedAssetData.ObjectPath.ToString();
+			const FString SourceAssetPath = SelectedAssetData.GetSoftObjectPath().ToString();
 			const FString NewDuplicatedAssetName = SelectedAssetData.AssetName.ToString() + TEXT("_") + FString::FromInt(i + 1);
 			const FString NewPathName = FPaths::Combine(SelectedAssetData.PackagePath.ToString(), NewDuplicatedAssetName);
 
@@ -83,4 +84,32 @@ void UQuickActionUtility::AddPrefixes()
 		ShowNotifyInfo(TEXT("Successfuly renamed " + FString::FromInt(Counter) + " assets"));
 	}
 	
+}
+
+void UQuickActionUtility::RemoveUnusedAssets()
+{
+	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
+	TArray<FAssetData> UnusedAssetsData;
+
+	for(const FAssetData& SelectedAssetData : SelectedAssetsData)
+	{
+		TArray<FString> AssetReferences = UEditorAssetLibrary::FindPackageReferencersForAsset(SelectedAssetData.GetSoftObjectPath().ToString());
+
+		if(AssetReferences.Num() == 0)
+		{
+			UnusedAssetsData.Add(SelectedAssetData);
+		}
+	}
+
+	if(UnusedAssetsData.Num() == 0)
+	{
+		ShowMsgDialog(EAppMsgType::Ok,TEXT("No unused assets"), false);
+		return;
+	}
+	
+	int32 NumOfAssetsDeleted = ObjectTools::DeleteAssets(UnusedAssetsData);
+
+	if(NumOfAssetsDeleted == 0) return;
+
+	ShowNotifyInfo(TEXT("Successfully deleted " + FString::FromInt(NumOfAssetsDeleted) + " unused assets"));
 }
