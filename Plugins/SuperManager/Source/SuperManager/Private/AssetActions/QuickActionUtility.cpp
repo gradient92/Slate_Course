@@ -10,7 +10,7 @@ void UQuickActionUtility::DuplicateAsset(int32 NumOfDuplicates)
 {
 	if(NumOfDuplicates <= 0)
 	{
-		Print(TEXT("INVALID_NUMBER"), FColor::Red);
+		ShowMsgDialog(EAppMsgType::Ok, TEXT("Please enter a valid number"));
 		return;
 	}
 
@@ -35,6 +35,7 @@ void UQuickActionUtility::DuplicateAsset(int32 NumOfDuplicates)
 
 	if (Counter > 0)
 	{
-		Print(TEXT("SUCCESS - " + FString::FromInt(Counter) + " files"), FColor::Green);
+		ShowNotifyInfo(TEXT("SUCCESS - " + FString::FromInt(Counter) + " files"));
+		/*Print(TEXT("SUCCESS - " + FString::FromInt(Counter) + " files"), FColor::Green);*/
 	}
 }
