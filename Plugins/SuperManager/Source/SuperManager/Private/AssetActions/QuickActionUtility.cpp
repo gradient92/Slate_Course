@@ -11,7 +11,7 @@ void UQuickActionUtility::DuplicateAsset(int32 NumOfDuplicates)
 {
 	if(NumOfDuplicates <= 0)
 	{
-		ShowMsgDialog(EAppMsgType::Ok, TEXT("Please enter a valid number"));
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("Please enter a valid number"));
 		return;
 	}
 
@@ -36,7 +36,7 @@ void UQuickActionUtility::DuplicateAsset(int32 NumOfDuplicates)
 
 	if (Counter > 0)
 	{
-		ShowNotifyInfo(TEXT("SUCCESS - " + FString::FromInt(Counter) + " files"));
+		DebugHeader::ShowNotifyInfo(TEXT("SUCCESS - " + FString::FromInt(Counter) + " files"));
 		/*Print(TEXT("SUCCESS - " + FString::FromInt(Counter) + " files"), FColor::Green);*/
 	}
 }
@@ -54,7 +54,7 @@ void UQuickActionUtility::AddPrefixes()
 
 		if(!PrefixFound || PrefixFound->IsEmpty())
 		{
-			Print(TEXT("Failed") + SelectedObject->GetClass()->GetName(), FColor::Red);
+			DebugHeader::Print(TEXT("Failed") + SelectedObject->GetClass()->GetName(), FColor::Red);
 			continue;
 		}
 
@@ -62,7 +62,7 @@ void UQuickActionUtility::AddPrefixes()
 
 		if(OldName.StartsWith(*PrefixFound))
 		{
-			Print(OldName + TEXT(" already has prefix added"), FColor::Red);
+			DebugHeader::Print(OldName + TEXT(" already has prefix added"), FColor::Red);
 			continue;
 		}
 
@@ -81,7 +81,7 @@ void UQuickActionUtility::AddPrefixes()
 
 	if(Counter > 0)
 	{
-		ShowNotifyInfo(TEXT("Successfuly renamed " + FString::FromInt(Counter) + " assets"));
+		DebugHeader::ShowNotifyInfo(TEXT("Successfuly renamed " + FString::FromInt(Counter) + " assets"));
 	}
 	
 }
@@ -103,7 +103,7 @@ void UQuickActionUtility::RemoveUnusedAssets()
 
 	if(UnusedAssetsData.Num() == 0)
 	{
-		ShowMsgDialog(EAppMsgType::Ok,TEXT("No unused assets"), false);
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok,TEXT("No unused assets"), false);
 		return;
 	}
 	
@@ -111,5 +111,5 @@ void UQuickActionUtility::RemoveUnusedAssets()
 
 	if(NumOfAssetsDeleted == 0) return;
 
-	ShowNotifyInfo(TEXT("Successfully deleted " + FString::FromInt(NumOfAssetsDeleted) + " unused assets"));
+	DebugHeader::ShowNotifyInfo(TEXT("Successfully deleted " + FString::FromInt(NumOfAssetsDeleted) + " unused assets"));
 }
