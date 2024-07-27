@@ -26,6 +26,8 @@ private:
 	void AddCBMenuEntry(FMenuBuilder& MenuBuilder);
 
 	void OnDeleteUnusedAssetsButtonClicked();
+
+	void UpdateRedirectors();
 	
 #pragma endregion 
 };
