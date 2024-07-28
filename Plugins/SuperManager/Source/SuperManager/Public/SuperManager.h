@@ -26,7 +26,9 @@ private:
 	void AddCBMenuEntry(FMenuBuilder& MenuBuilder);
 
 	void OnDeleteUnusedAssetsButtonClicked();
-
+	
+	void OnDeleteEmptyFoldersButtonClicked();
+	
 	void UpdateRedirectors();
 	
 #pragma endregion 

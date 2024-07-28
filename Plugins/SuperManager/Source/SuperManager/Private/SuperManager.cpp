@@ -58,6 +58,14 @@ void FSuperManagerModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 		FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FSuperManagerModule::OnDeleteUnusedAssetsButtonClicked)
 	);
+
+	MenuBuilder.AddMenuEntry
+	(
+		FText::FromString(TEXT("Delete Empty Folders")),
+		FText::FromString(TEXT("Safely delete all empty folders")),
+		FSlateIcon(),
+		FExecuteAction::CreateRaw(this, &FSuperManagerModule::OnDeleteEmptyFoldersButtonClicked)
+	);
 }
 
 void FSuperManagerModule::OnDeleteUnusedAssetsButtonClicked()
@@ -110,6 +118,57 @@ void FSuperManagerModule::OnDeleteUnusedAssetsButtonClicked()
 	else
 	{	
 		DebugHeader::ShowMsgDialog(EAppMsgType::Ok ,TEXT("No unused assets found"));
+	}
+}
+
+void FSuperManagerModule::OnDeleteEmptyFoldersButtonClicked()
+{
+	UpdateRedirectors();
+	
+	TArray<FString> FolderPathsArray = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0], true, true);
+	uint32 Counter = 0;
+
+	FString EmptyFolderPathsNames;
+	TArray<FString> EmptyFoldersPathsArray;
+
+	for(const FString& FolderPath : FolderPathsArray)
+	{
+		if(FolderPath.Contains(TEXT("Developers")) || FolderPath.Contains(TEXT("Collections")))
+		{
+			continue;
+		}
+		
+		if(!UEditorAssetLibrary::DoesDirectoryExist(FolderPath)) continue;
+
+		if(!UEditorAssetLibrary::DoesDirectoryHaveAssets(FolderPath))
+		{
+			EmptyFolderPathsNames.Append(FolderPath);
+			EmptyFolderPathsNames.Append(TEXT("\n"));
+
+			EmptyFoldersPathsArray.Add(FolderPath);
+		}
+	}
+
+	if(EmptyFoldersPathsArray.Num() == 0)
+	{
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("No empty folder found"), false);
+		return;
+	}
+
+	EAppReturnType::Type ConfirmResult = DebugHeader::ShowMsgDialog(EAppMsgType::OkCancel,
+		TEXT("Empty folders found in: \n") + EmptyFolderPathsNames + TEXT("\nWould you like to delete all?"), false);
+
+	if(ConfirmResult == EAppReturnType::Cancel) return;
+
+	for(const FString& EmptyFolderPath : EmptyFoldersPathsArray)
+	{
+		if(UEditorAssetLibrary::DeleteDirectory(EmptyFolderPath)) ++Counter;
+			else DebugHeader::Print(TEXT("Failed to delete " + EmptyFolderPath), FColor::Red);
+	}
+
+	if (Counter > 0)
+	{
+		DebugHeader::ShowNotifyInfo(TEXT("Successfuly deleted ") + FString::FromInt(Counter) + TEXT(" folders"));
 	}
 }
 
