@@ -122,7 +122,7 @@ void FSuperManagerModule::UpdateRedirectors()
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.PackagePaths.Emplace("/Game");
-	Filter.ClassPaths.Emplace("ObjectRedirector");
+	Filter.ClassPaths.Emplace(FTopLevelAssetPath(TEXT("/Script/CoreUObject.ObjectRedirector")));
 
 	TArray<FAssetData> OutRedirectors;
 	AssetRegistryModule.Get().GetAssets(Filter,OutRedirectors);
