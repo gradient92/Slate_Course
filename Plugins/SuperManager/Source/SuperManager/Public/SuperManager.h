@@ -28,8 +28,19 @@ private:
 	void OnDeleteUnusedAssetsButtonClicked();
 	
 	void OnDeleteEmptyFoldersButtonClicked();
+
+	void OnAdvancedDeleteButtonClick();
 	
 	void UpdateRedirectors();
 	
-#pragma endregion 
+#pragma endregion
+
+#pragma region CustomEditorTab
+
+	void RegisterAdvancedDeleteTab();
+
+	TSharedRef<SDockTab> OnSpawnAdvancedDeleteTab(const FSpawnTabArgs& SpawnTabArgs);
+	
+#pragma endregion
+	
 };

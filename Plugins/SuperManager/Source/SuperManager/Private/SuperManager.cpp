@@ -14,6 +14,7 @@ void FSuperManagerModule::StartupModule()
 {
 	InitCBMenuExtention();
 	
+	RegisterAdvancedDeleteTab();
 }
 
 #pragma region ContentBrowserMenuExtension
@@ -65,6 +66,14 @@ void FSuperManagerModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 		FText::FromString(TEXT("Safely delete all empty folders")),
 		FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FSuperManagerModule::OnDeleteEmptyFoldersButtonClicked)
+	);
+
+	MenuBuilder.AddMenuEntry
+	(
+		FText::FromString(TEXT("Advanced Delete")),
+		FText::FromString(TEXT("List assets by specific condition in a tab for deleting")),
+		FSlateIcon(),
+		FExecuteAction::CreateRaw(this, &FSuperManagerModule::OnAdvancedDeleteButtonClick)
 	);
 }
 
@@ -172,6 +181,11 @@ void FSuperManagerModule::OnDeleteEmptyFoldersButtonClicked()
 	}
 }
 
+void FSuperManagerModule::OnAdvancedDeleteButtonClick()
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(FName("Advanced Delete"));
+}
+
 void FSuperManagerModule::UpdateRedirectors()
 {
 	TArray<UObjectRedirector*> RedirectorsToFixArray;
@@ -199,7 +213,24 @@ void FSuperManagerModule::UpdateRedirectors()
 	AssetToolsModule.Get().FixupReferencers(RedirectorsToFixArray);
 }
 
-#pragma endregion 
+#pragma endregion
+
+#pragma region CustomEditorTab
+
+void FSuperManagerModule::RegisterAdvancedDeleteTab()
+{
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AdvancedDel"),
+		FOnSpawnTab::CreateRaw(this, &FSuperManagerModule::OnSpawnAdvancedDeleteTab))
+		.SetDisplayName(FText::FromString(TEXT("Advanced Delete")));
+}
+
+TSharedRef<SDockTab> FSuperManagerModule::OnSpawnAdvancedDeleteTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	return
+	SNew(SDockTab).TabRole(NomadTab);
+}
+
+#pragma endregion
 
 void FSuperManagerModule::ShutdownModule()
 {
