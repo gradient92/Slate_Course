@@ -7,6 +7,7 @@
 #include "ObjectTools.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
+#include "SlateWidgets/AdvancedDeleteWidget.h"
 
 #define LOCTEXT_NAMESPACE "FSuperManagerModule"
 
@@ -183,7 +184,7 @@ void FSuperManagerModule::OnDeleteEmptyFoldersButtonClicked()
 
 void FSuperManagerModule::OnAdvancedDeleteButtonClick()
 {
-	FGlobalTabmanager::Get()->TryInvokeTab(FName("Advanced Delete"));
+	FGlobalTabmanager::Get()->TryInvokeTab(FName("AdvancedDelete"));
 }
 
 void FSuperManagerModule::UpdateRedirectors()
@@ -219,7 +220,7 @@ void FSuperManagerModule::UpdateRedirectors()
 
 void FSuperManagerModule::RegisterAdvancedDeleteTab()
 {
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AdvancedDel"),
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AdvancedDelete"),
 		FOnSpawnTab::CreateRaw(this, &FSuperManagerModule::OnSpawnAdvancedDeleteTab))
 		.SetDisplayName(FText::FromString(TEXT("Advanced Delete")));
 }
@@ -227,7 +228,34 @@ void FSuperManagerModule::RegisterAdvancedDeleteTab()
 TSharedRef<SDockTab> FSuperManagerModule::OnSpawnAdvancedDeleteTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	return
-	SNew(SDockTab).TabRole(NomadTab);
+	SNew(SDockTab).TabRole(ETabRole::NomadTab)
+	[
+		SNew(SAdvancedDeleteTab)
+		.AssetsDataToStore(GetAllAssetDataUnderSelectedFolder())
+	];
+}
+
+TArray<TSharedPtr<FAssetData>> FSuperManagerModule::GetAllAssetDataUnderSelectedFolder()
+{
+	TArray<TSharedPtr<FAssetData>> AvailableAssetData;
+
+	TArray<FString> AssetsPathNames = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);
+
+	for(const FString& AssetPathName : AssetsPathNames)
+	{
+		if(AssetPathName.Contains(TEXT("Developers")) || AssetPathName.Contains(TEXT("Collections")))
+		{
+			continue;
+		}
+		
+		if(!UEditorAssetLibrary::DoesAssetExist(AssetPathName)) continue;
+
+		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
+
+		AvailableAssetData.Add(MakeShared<FAssetData>(Data));
+	}
+	
+	return AvailableAssetData;
 }
 
 #pragma endregion
