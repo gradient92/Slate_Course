@@ -10,6 +10,8 @@ class SAdvancedDeleteTab : public SCompoundWidget
 
 	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>, AssetsDataToStore)
 	
+	SLATE_ARGUMENT(FString, CurrentSelectedFolder)
+	
 	SLATE_END_ARGS()
 
 public:
@@ -17,6 +19,7 @@ public:
 
 private:
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
+	TArray<TSharedPtr<FAssetData>> DisplayedAssetsData;;
 	TArray<TSharedRef<SCheckBox>> CheckboxesArray;
 	TArray<TSharedPtr<FAssetData>> AssetsDataToDeleteArray;
 	
@@ -24,9 +27,27 @@ private:
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetListView;
 	void RefreshAssetListView();
 
+#pragma region ComboBoxForListingCondition
+
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructComboBox();
+
+	TArray<TSharedPtr<FString>> ComboBoxSourceItems;
+
+	TSharedRef<SWidget> OnGenerateComboContent(TSharedPtr<FString> SourceItem);
+
+	void OnComboSelectionChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+
+	TSharedPtr<STextBlock> ComboDisplayTextBlock;
+
+	TSharedRef<STextBlock> ConstructComboHelpTexts(const FString& TextContent, ETextJustify::Type TextJustify);
+	
+#pragma endregion 
+		
 #pragma region RowWidgetForAssetListView
 	
 	TSharedRef<ITableRow> OnGenerateRowForList(TSharedPtr<FAssetData> AssetDataToDisplay, const TSharedRef<STableViewBase>& OwnerTable);
+
+	void OnRowWidgetMouseButtonClicked(TSharedPtr<FAssetData> ClickedData);
 
 	TSharedRef<SCheckBox> ConstructCheckBox(const TSharedPtr<FAssetData> AssetDataToDisplay);
 	void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FAssetData> AssetData);
