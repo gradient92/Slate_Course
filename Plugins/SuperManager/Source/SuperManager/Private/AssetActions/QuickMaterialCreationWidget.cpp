@@ -8,6 +8,8 @@
 #include "AssetToolsModule.h"
 #include "Factories/MaterialFactoryNew.h"
 #include "Materials/MaterialExpressionTextureSample.h"
+#include "Materials/MaterialInstanceConstant.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
 
 #pragma region QuickMaterialCreationCore
 
@@ -27,9 +29,9 @@ void UQuickMaterialCreationWidget::CreateMaterialFromSelectedTextures()
 	FString SelectedTextureFolderPath;
 	uint32 PinsConnectedCounter = 0;
 
-	if(!ProcessSelectedData(SelectedAssetsData, SelectedTexturesArray, SelectedTextureFolderPath)) return;
+	if(!ProcessSelectedData(SelectedAssetsData, SelectedTexturesArray, SelectedTextureFolderPath)) {MaterialName = TEXT("M_"); return;}
 
-	if(CheckIsNameUsed(SelectedTextureFolderPath, MaterialName)) return;
+	if(CheckIsNameUsed(SelectedTextureFolderPath, MaterialName)) {MaterialName = TEXT("M_"); return;}
 
 	UMaterial* CreatedMaterial = CreateMaterialAsset(MaterialName,SelectedTextureFolderPath);
 
@@ -69,6 +71,11 @@ void UQuickMaterialCreationWidget::CreateMaterialFromSelectedTextures()
 		+ FString::FromInt(PinsConnectedCounter) + (TEXT(" pins")));
 	}
 
+	if(bCreateMaterialInstance)
+	{
+		CreateMaterialInstanceAsset(CreatedMaterial,MaterialName,SelectedTextureFolderPath);
+	}
+	
 	MaterialName = TEXT("M_");
 }
 
@@ -408,3 +415,29 @@ bool UQuickMaterialCreationWidget::TryConnectORM(UMaterialExpressionTextureSampl
 }
 
 #pragma endregion
+
+UMaterialInstanceConstant* UQuickMaterialCreationWidget::CreateMaterialInstanceAsset(UMaterial* CreatedMaterial,
+	FString NameOfMaterialInstance, const FString& PathToPutMI)
+{
+	NameOfMaterialInstance.RemoveFromStart(TEXT("M_"));
+	NameOfMaterialInstance.InsertAt(0,TEXT("MI_"));
+
+	UMaterialInstanceConstantFactoryNew* MIFactoryNew = NewObject<UMaterialInstanceConstantFactoryNew>();
+
+	FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
+
+	UObject* CreatedObject = AssetToolsModule.Get().CreateAsset(NameOfMaterialInstance,PathToPutMI,
+	UMaterialInstanceConstant::StaticClass(),MIFactoryNew);
+
+	if(UMaterialInstanceConstant* CreatedMI = Cast<UMaterialInstanceConstant>(CreatedObject))
+	{
+		CreatedMI->SetParentEditorOnly(CreatedMaterial);
+
+		CreatedMI->PostEditChange();
+		CreatedMaterial->PostEditChange();
+
+		return CreatedMI;
+	}
+
+	return nullptr;
+}
