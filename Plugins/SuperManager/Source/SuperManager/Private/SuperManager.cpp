@@ -99,6 +99,12 @@ void FSuperManagerModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 
 void FSuperManagerModule::OnDeleteUnusedAssetsButtonClicked()
 {
+	if(ConstructedDockTab.IsValid())
+	{
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok,TEXT("Please close advanced delete tab before this operation"));
+		return;
+	}
+	
 	if(FolderPathsSelected.Num() > 1)
 	{
 		DebugHeader::ShowMsgDialog(EAppMsgType::Ok ,TEXT("You can only do this to one folder"));
@@ -152,6 +158,12 @@ void FSuperManagerModule::OnDeleteUnusedAssetsButtonClicked()
 
 void FSuperManagerModule::OnDeleteEmptyFoldersButtonClicked()
 {
+	if(ConstructedDockTab.IsValid())
+	{
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok,TEXT("Please close advanced delete tab before this operation"));
+		return;
+	}
+	
 	UpdateRedirectors();
 	
 	TArray<FString> FolderPathsArray = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0], true, true);
@@ -249,13 +261,20 @@ void FSuperManagerModule::RegisterAdvancedDeleteTab()
 
 TSharedRef<SDockTab> FSuperManagerModule::OnSpawnAdvancedDeleteTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	return
+	if(FolderPathsSelected.Num() == 0) return SNew(SDockTab).TabRole(ETabRole::NomadTab);
+
+	ConstructedDockTab = 
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 	[
 		SNew(SAdvancedDeleteTab)
 		.AssetsDataToStore(GetAllAssetDataUnderSelectedFolder())
 		.CurrentSelectedFolder(FolderPathsSelected[0])
 	];
+
+	ConstructedDockTab->SetOnTabClosed(
+	SDockTab::FOnTabClosedCallback::CreateRaw(this,&FSuperManagerModule::OnAdvancedDeleteTabClosed));
+
+	return ConstructedDockTab.ToSharedRef();
 }
 
 TArray<TSharedPtr<FAssetData>> FSuperManagerModule::GetAllAssetDataUnderSelectedFolder()
@@ -279,6 +298,15 @@ TArray<TSharedPtr<FAssetData>> FSuperManagerModule::GetAllAssetDataUnderSelected
 	}
 	
 	return AvailableAssetData;
+}
+
+void FSuperManagerModule::OnAdvancedDeleteTabClosed(TSharedRef<SDockTab> TabToClose)
+{
+	if(ConstructedDockTab.IsValid())
+	{
+		ConstructedDockTab.Reset();
+		FolderPathsSelected.Empty();
+	}
 }
 
 #pragma region LevelEditorMenuExtension
