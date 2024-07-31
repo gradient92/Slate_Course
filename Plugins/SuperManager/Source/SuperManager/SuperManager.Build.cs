@@ -32,7 +32,8 @@ public class SuperManager : ModuleRules
 				"Niagara",
 				"UnrealEd",
 				"InputCore",
-				"Projects"
+				"Projects",
+				"SceneOutliner"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

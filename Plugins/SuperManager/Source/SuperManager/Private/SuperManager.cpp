@@ -13,6 +13,8 @@
 #include "Engine/Selection.h"
 #include "Subsystems/EditorActorSubsystem.h"
 #include "CustomUICommands/SuperManagerUICommands.h"
+#include "SceneOutlinerModule.h"
+#include "CustomOutlinerColumn/OutlinerSelectionColumn.h"
 
 #define LOCTEXT_NAMESPACE "FSuperManagerModule"
 
@@ -31,6 +33,8 @@ void FSuperManagerModule::StartupModule()
 	InitLevelEditorExtension();
 
 	InitCustomSelectionEvent();
+
+	InitSceneOutlinerColumnExtension();
 }
 
 #pragma region ContentBrowserMenuExtension
@@ -357,6 +361,8 @@ void FSuperManagerModule::OnLockActorSelectionButtonClicked()
 		CurrentLockedActorNames.Append(SelectedActor->GetActorLabel());
 	}
 
+	RefreshSceneOutliner();
+
 	DebugHeader::ShowNotifyInfo(CurrentLockedActorNames);
 }
 
@@ -377,9 +383,10 @@ void FSuperManagerModule::OnUnlockActorSelectionButtonClicked()
 		}
 	}
 
-	if(AllLockedActors.Num()==0)
+	if(AllLockedActors.Num() == 0)
 	{
 		DebugHeader::ShowNotifyInfo(TEXT("No selection locked actor currently"));
+		return;
 	}
 
 	FString UnlockedActorNames = TEXT("Unlocked selection for:");
@@ -391,6 +398,8 @@ void FSuperManagerModule::OnUnlockActorSelectionButtonClicked()
 		UnlockedActorNames.Append(TEXT("\n"));
 		UnlockedActorNames.Append(LockedActor->GetActorLabel());
 	}
+
+	RefreshSceneOutliner();
 
 	DebugHeader::ShowNotifyInfo(UnlockedActorNames);
 }
@@ -456,7 +465,50 @@ void FSuperManagerModule::OnUnlockActorSelectionHotKeyPressed()
 	OnUnlockActorSelectionButtonClicked();
 }
 
-#pragma endregion 
+#pragma endregion
+
+#pragma region SceneOutlinerExtension
+
+void FSuperManagerModule::InitSceneOutlinerColumnExtension()
+{
+	FSceneOutlinerModule& SceneOutlinerModule =
+	FModuleManager::LoadModuleChecked<FSceneOutlinerModule>(TEXT("SceneOutliner"));
+
+	FSceneOutlinerColumnInfo SelectionLockColumnInfo(
+		ESceneOutlinerColumnVisibility::Visible,
+		1,
+		FCreateSceneOutlinerColumn::CreateRaw(this, &FSuperManagerModule::OnCreateSelectionLockColumn)
+	);
+
+	SceneOutlinerModule.RegisterDefaultColumnType<FOutlinerSelectionLockColumn>(SelectionLockColumnInfo);
+}
+    
+TSharedRef<ISceneOutlinerColumn> FSuperManagerModule::OnCreateSelectionLockColumn(ISceneOutliner& SceneOutliner)
+{
+	return MakeShareable(new FOutlinerSelectionLockColumn(SceneOutliner));
+}
+
+#pragma endregion
+
+void FSuperManagerModule::ProcessLockingForOutliner(AActor* ActorToProcess, bool bShouldLock)
+{
+	if(!GetEditorActorSubsystem()) return;
+
+	if(bShouldLock)
+	{
+		LockActorSelection(ActorToProcess);
+
+		WeakEditorActorSubsystem->SetActorSelectionState(ActorToProcess,false);
+
+		DebugHeader::ShowNotifyInfo(TEXT("Locked selection for:\n") + ActorToProcess->GetActorLabel());
+	}
+	else
+	{
+		UnlockActorSelection(ActorToProcess);
+
+		DebugHeader::ShowNotifyInfo(TEXT("Unocked selection for:\n") + ActorToProcess->GetActorLabel());
+	}
+}
 
 bool FSuperManagerModule::GetEditorActorSubsystem()
 {
@@ -475,6 +527,19 @@ void FSuperManagerModule::UnlockActorSelection(AActor* ActorToProcess)
 	if(ActorToProcess->ActorHasTag(FName("Locked")))
 	{
 		ActorToProcess->Tags.Remove(FName("Locked"));
+	}
+}
+
+void FSuperManagerModule::RefreshSceneOutliner()
+{
+	FLevelEditorModule& LevelEditorModule =
+	FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+
+	TSharedPtr<ISceneOutliner> SceneOutliner = LevelEditorModule.GetFirstLevelEditor()->GetSceneOutliner();
+
+	if(SceneOutliner.IsValid())
+	{
+		SceneOutliner->FullRefresh();
 	}
 }
 

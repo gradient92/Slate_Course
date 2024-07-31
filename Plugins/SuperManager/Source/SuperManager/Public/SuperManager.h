@@ -65,10 +65,9 @@ private:
 	void OnActorSelected(UObject* SelectedObject);
 
 	void LockActorSelection(AActor* ActorToProcess);
-	
 	void UnlockActorSelection(AActor* ActorToProcess);
-	
-	bool CheckIsActorSelectionLocked(AActor* ActorToProcess);
+
+	void RefreshSceneOutliner();
 
 #pragma endregion
 
@@ -82,6 +81,15 @@ private:
 	void OnUnlockActorSelectionHotKeyPressed();
 
 #pragma endregion
+
+#pragma region SceneOutlinerExtension
+
+	void InitSceneOutlinerColumnExtension();
+
+	TSharedRef<class ISceneOutlinerColumn> OnCreateSelectionLockColumn(class ISceneOutliner& SceneOutliner);
+
+#pragma endregion
+
 	
 	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsystem;
 
@@ -97,5 +105,9 @@ public:
 	void ListSameNameAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& AssetDataToFilter, TArray<TSharedPtr<FAssetData>>& OutSameNameAssetsData);
 	void SyncSBToClickedAssetForAssetList(const FString& AssetPathToSync);
 	
-#pragma endregion 
+#pragma endregion
+	
+	bool CheckIsActorSelectionLocked(AActor* ActorToProcess);
+	
+	void ProcessLockingForOutliner(AActor* ActorToProcess, bool bShouldLock);
 };
