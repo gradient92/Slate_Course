@@ -45,6 +45,38 @@ private:
 	
 #pragma endregion
 
+#pragma region LevelEditorMenuExtension
+
+	void InitLevelEditorExtension();
+
+	TSharedRef<FExtender> CustomLevelEditorMenuExtender(const TSharedRef<FUICommandList> UICommandList, const TArray<AActor*> SelectedActors);
+
+	void AddLevelEditorMenuEntry(FMenuBuilder& MenuBuilder);
+
+	void OnLockActorSelectionButtonClicked();
+	void OnUnlockActorSelectionButtonClicked();
+
+#pragma endregion
+
+#pragma region SelectionLock
+
+	void InitCustomSelectionEvent();
+
+	void OnActorSelected(UObject* SelectedObject);
+
+	void LockActorSelection(AActor* ActorToProcess);
+	
+	void UnlockActorSelection(AActor* ActorToProcess);
+	
+	bool CheckIsActorSelectionLocked(AActor* ActorToProcess);
+
+
+#pragma endregion
+
+	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsystem;
+
+	bool GetEditorActorSubsystem();
+	
 public:
 
 #pragma region ProccessDataForAdvancedDeleteTab
