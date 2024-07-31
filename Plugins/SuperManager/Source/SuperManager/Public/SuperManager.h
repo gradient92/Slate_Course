@@ -70,9 +70,19 @@ private:
 	
 	bool CheckIsActorSelectionLocked(AActor* ActorToProcess);
 
-
 #pragma endregion
 
+#pragma region CustomEditorUICommands
+
+	TSharedPtr<FUICommandList> CustomUICommands;
+
+	void InitCustomUICommands();
+
+	void OnSelectionLockHotKeyPressed();
+	void OnUnlockActorSelectionHotKeyPressed();
+
+#pragma endregion
+	
 	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsystem;
 
 	bool GetEditorActorSubsystem();

@@ -12,6 +12,7 @@
 #include "LevelEditor.h"
 #include "Engine/Selection.h"
 #include "Subsystems/EditorActorSubsystem.h"
+#include "CustomUICommands/SuperManagerUICommands.h"
 
 #define LOCTEXT_NAMESPACE "FSuperManagerModule"
 
@@ -22,6 +23,10 @@ void FSuperManagerModule::StartupModule()
 	InitCBMenuExtention();
 	
 	RegisterAdvancedDeleteTab();
+
+	FSuperManagerUICommands::Register();
+
+	InitCustomUICommands();
 	
 	InitLevelEditorExtension();
 
@@ -279,6 +284,9 @@ void FSuperManagerModule::InitLevelEditorExtension()
 	FLevelEditorModule& LevelEditorModule =
 	FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 
+	TSharedRef<FUICommandList> ExistingLevelCommands = LevelEditorModule.GetGlobalLevelEditorActions();
+	ExistingLevelCommands->Append(CustomUICommands.ToSharedRef());
+
 	TArray<FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors>& LevelEditorMenuExtenders =
 	LevelEditorModule.GetAllLevelViewportContextMenuExtenders();
 
@@ -421,6 +429,35 @@ void FSuperManagerModule::LockActorSelection(AActor* ActorToProcess)
 	}	
 }
 
+#pragma region CustomEditorUICommands
+
+void FSuperManagerModule::InitCustomUICommands()
+{
+	CustomUICommands = MakeShareable(new FUICommandList());
+
+	CustomUICommands->MapAction(
+		FSuperManagerUICommands::Get().LockActorSelection,
+		FExecuteAction::CreateRaw(this, &FSuperManagerModule::OnSelectionLockHotKeyPressed)
+	);
+
+	CustomUICommands->MapAction(
+		FSuperManagerUICommands::Get().UnlockActorSelection,
+		FExecuteAction::CreateRaw(this, &FSuperManagerModule::OnUnlockActorSelectionHotKeyPressed)
+	);
+}
+
+void FSuperManagerModule::OnSelectionLockHotKeyPressed()
+{
+	OnLockActorSelectionButtonClicked();
+}
+
+void FSuperManagerModule::OnUnlockActorSelectionHotKeyPressed()
+{
+	OnUnlockActorSelectionButtonClicked();
+}
+
+#pragma endregion 
+
 bool FSuperManagerModule::GetEditorActorSubsystem()
 {
 	if(!WeakEditorActorSubsystem.IsValid())
@@ -537,6 +574,8 @@ void FSuperManagerModule::ShutdownModule()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName("AdvancedDelete"));
 
 	FSuperManagerStyle::ShutDown();
+
+	FSuperManagerUICommands::Unregister();
 }
 
 #undef LOCTEXT_NAMESPACE
