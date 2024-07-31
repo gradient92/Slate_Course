@@ -15,6 +15,40 @@ enum class E_DuplicationAxis : uint8
 	EDA_MAX UMETA (DisplayName = "Default Max")
 };
 
+USTRUCT(BlueprintType)
+struct FRandomActorRotation
+{	
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bRandomizeRotYaw = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bRandomizeRotYaw"))
+	float RotYawMin = -45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bRandomizeRotYaw"))
+	float RotYawMax = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bRandomizeRotPitch = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bRandomizeRotPitch"))
+	float RotPitchMin = -45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bRandomizeRotPitch"))
+	float RotPitchMax = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bRandomizeRotRoll = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bRandomizeRotRoll"))
+	float RotRollMin = -45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bRandomizeRotRoll"))
+	float RotRollMax = 45.f;
+
+};
+
 /**
  * 
  */
@@ -24,11 +58,16 @@ class SUPERMANAGER_API UQuickActorActionsWidget : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 public:
+
+#pragma region ActorBatchSelection
+	
 	UFUNCTION(BlueprintCallable)
 	void SelectAllActorsWithSimilarName();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ActorBatchSelection")
 	TEnumAsByte<ESearchCase::Type> SearchCase = ESearchCase::IgnoreCase;
+
+#pragma endregion
 
 #pragma region ActorBatchDuplication
 
@@ -43,6 +82,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ActorBatchDuplication")
 	float OffsetDist = 300.f;
+
+#pragma endregion
+
+#pragma region RandomizeActorTransform
+
+	UFUNCTION(BlueprintCallable)
+	void RandomizeActorTransform();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RandomizeActorTransform")
+	FRandomActorRotation RandomActorRotation;
 
 #pragma endregion
 	
